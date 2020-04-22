@@ -66,7 +66,6 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 type AuthAPIFunc func(c *gin.Context, user *models.User)
 
 //Authenticator 根据user验证是否经过中间件
-//todo:使用函数调用链
 func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, exists := c.Get("user")

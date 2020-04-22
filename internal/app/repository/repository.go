@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-//TODO:结构体返回列表设置为指针
 
 //短链接历史记录返回列表
 type RequestHistoryListResult struct {
@@ -28,7 +27,6 @@ func NewEmptyRequestHistoryResult() *RequestHistoryListResult {
 	}
 }
 
-//TODO:在append方法中采用...方式避免数组的遍历，
 //AddHistory 添加历史记录
 func (r *RequestHistoryListResult) AddHistory(h ...*models.RequestHistory) {
 	r.Histories = append(r.Histories, h...)
@@ -74,12 +72,10 @@ func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*R
 		start = d[0]
 		end = d[len(d)-1]
 	}
-	//TODO:time.Time:end.Before(start)
 	if end.Before(start) {
 		return result, fmt.Errorf("结束日期不能早于开始日期")
 	}
 
-	//TODO:redis多命令行处理
 	rawRs := make([]*redis.StringSliceCmd, 0)
 	p := r.db.Pipeline()
 	for ; start.Before(end); start = start.Add(dayDuration) {

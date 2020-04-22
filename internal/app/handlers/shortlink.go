@@ -9,7 +9,6 @@ import (
 	"net/http"
 )
 
-//todo:通过函数调用链的方式使用相同信息
 
 //GetShortLinkAPI 获取短链接信息
 func GetShortLinkAPI() gin.HandlerFunc {

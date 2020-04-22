@@ -27,7 +27,6 @@ type LandingHostsParameter struct {
 
 //UpdateLandingHostsAPI 更新默认配置信息
 func UpdateLandingHostsAPI() gin.HandlerFunc {
-	//todo:不是很懂这里的设计
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, gin.H{

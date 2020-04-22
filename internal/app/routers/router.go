@@ -10,9 +10,7 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	//todo:gin中环境切换
 	if gin.Mode() == gin.DebugMode { // 开发环境下，开启 CORS
-		//todo:gin中自动解决跨域插件
 		corsCfg := cors.DefaultConfig()
 		corsCfg.AllowAllOrigins = true
 		corsCfg.AddAllowHeaders("Authorization")

@@ -22,7 +22,6 @@ func Redirect(c *gin.Context) {
 
 	// 保存短链接请求记录（IP、User-Agent）
 	rhRepo := repository.GetRequestHistoryRepo()
-	//TODO:开启协程保存信息
 	go rhRepo.Save(models.NewRequestHistory(s, c.ClientIP(), c.Request.UserAgent()))
 
 	c.Redirect(http.StatusTemporaryRedirect, s.Url)

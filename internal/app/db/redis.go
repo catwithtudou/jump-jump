@@ -6,7 +6,6 @@ import (
 	"strconv"
 )
 
-//TODO：命令行获取redis配置信息
 var client *redis.Client
 var defaultDbIdx = os.Getenv("REDIS_DB")
 var redisHost = os.Getenv("REDIS_HOST")
