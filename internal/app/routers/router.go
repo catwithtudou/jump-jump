@@ -10,7 +10,9 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
+	//todo:gin中环境切换
 	if gin.Mode() == gin.DebugMode { // 开发环境下，开启 CORS
+		//todo:gin中自动解决跨域插件
 		corsCfg := cors.DefaultConfig()
 		corsCfg.AllowAllOrigins = true
 		corsCfg.AddAllowHeaders("Authorization")
@@ -23,13 +25,25 @@ func SetupRouter() *gin.Engine {
 		c.HTML(http.StatusOK, "index.html", gin.H{})
 	})
 
-	r.POST("/v1/user/login", handlers.Login)
-	r.GET("/v1/user/info", handlers.JWTAuthenticatorMiddleware(), handlers.GetUserInfoAPI())
-	r.POST("/v1/user/logout", handlers.JWTAuthenticatorMiddleware(), handlers.LogoutAPI())
-	r.PATCH("/v1/user/change-password", handlers.JWTAuthenticatorMiddleware(), handlers.ChangePasswordAPI())
+	user:=r.Group("/v1/user")
+	{
+		user.POST("/login", handlers.Login)
+		user.Use(handlers.JWTAuthenticatorMiddleware())
+		user.GET("/info",  handlers.GetUserInfoAPI())
+		user.POST("/logout", handlers.LogoutAPI())
+		user.PATCH("/change-password", handlers.ChangePasswordAPI())
+	}
 
-	r.GET("/v1/config", handlers.GetConfig)
-	r.PATCH("/v1/config", handlers.JWTAuthenticatorMiddleware(), handlers.UpdateLandingHostsAPI())
+
+
+	config:=r.Group("/v1/config")
+	{
+		config.GET("/", handlers.GetConfig)
+		config.Use(handlers.JWTAuthenticatorMiddleware())
+		config.PATCH("/",handlers.UpdateLandingHostsAPI())
+	}
+
+
 
 	shortLinkAPI := r.Group("/v1/short-link")
 	shortLinkAPI.Use(handlers.JWTAuthenticatorMiddleware())
@@ -43,6 +57,7 @@ func SetupRouter() *gin.Engine {
 	return r
 }
 
+//SetupLandingRouter 根据主机id访问不同主机
 func SetupLandingRouter() *gin.Engine {
 	r := gin.Default()
 

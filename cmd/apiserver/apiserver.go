@@ -7,12 +7,14 @@ import (
 )
 
 func main() {
+	//获取环境变量
 	addr := os.Getenv("J2_API_ADDR")
 	if addr == "" {
 		_, _ = fmt.Fprint(os.Stderr, "missing J2_API_ADDR environment variable")
 		os.Exit(1)
 	}
 
+	//
 	err := server.Run(addr)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", err)

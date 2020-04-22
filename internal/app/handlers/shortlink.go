@@ -9,6 +9,9 @@ import (
 	"net/http"
 )
 
+//todo:通过函数调用链的方式使用相同信息
+
+//GetShortLinkAPI 获取短链接信息
 func GetShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		slRepo := repository.GetShortLinkRepo()
@@ -41,6 +44,7 @@ func GetShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+//CreateShortLinkAPI 创建短链接信息
 func CreateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		s := &models.ShortLink{CreatedBy: user.Username}
@@ -88,6 +92,7 @@ func CreateShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+//UpdateShortLinkAPI 更新短链接信息
 func UpdateShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		slRepo := repository.GetShortLinkRepo()
@@ -138,6 +143,7 @@ func UpdateShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+//DeleteShortLinkAPI 删除短链接信息
 func DeleteShortLinkAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		slRepo := repository.GetShortLinkRepo()
@@ -170,6 +176,7 @@ func DeleteShortLinkAPI() gin.HandlerFunc {
 	})
 }
 
+//ShortLinkActionAPI 获取时间范围短链接信息
 func ShortLinkActionAPI() gin.HandlerFunc {
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if c.Param("action") == "/latest-request-history" {

@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+//parseAuthorizationHeader 头部Authorization信息处理
 func parseAuthorizationHeader(a string) (string, error) {
 	if a == "" {
 		return "", fmt.Errorf("authorization 为空字符串")
@@ -23,6 +24,7 @@ func parseAuthorizationHeader(a string) (string, error) {
 	return t[1], nil
 }
 
+//JWTAuthenticatorMiddleware JWT验证中间件
 func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 从 Authorization 提取 JWT
@@ -63,6 +65,8 @@ func JWTAuthenticatorMiddleware() gin.HandlerFunc {
 
 type AuthAPIFunc func(c *gin.Context, user *models.User)
 
+//Authenticator 根据user验证是否经过中间件
+//todo:使用函数调用链
 func Authenticator(f AuthAPIFunc) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, exists := c.Get("user")

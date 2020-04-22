@@ -22,6 +22,8 @@ func EncodePassword(password []byte, salt []byte) ([]byte, error) {
 	return scrypt.Key(password, salt, 1<<15, 8, 1, 32)
 }
 
+//TODO:jwt-go库使用
+
 func GenerateJWT(username string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"identifier": username,                             // Payload 部分可以加入用户名的记录，最终可通过解密 Token 得到

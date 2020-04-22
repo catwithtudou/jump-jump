@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+//GetConfig 获取默认配置信息
 func GetConfig(c *gin.Context) {
 	cfg := config.GetConfig()
 	landingHosts := cfg.GetStringSliceValue("landingHosts", make([]string, 0))
@@ -24,7 +25,9 @@ type LandingHostsParameter struct {
 	Hosts []string `json:"hosts"`
 }
 
+//UpdateLandingHostsAPI 更新默认配置信息
 func UpdateLandingHostsAPI() gin.HandlerFunc {
+	//todo:不是很懂这里的设计
 	return Authenticator(func(c *gin.Context, user *models.User) {
 		if user.Role != models.RoleAdmin {
 			c.JSON(http.StatusOK, gin.H{
@@ -46,8 +49,8 @@ func UpdateLandingHostsAPI() gin.HandlerFunc {
 		}
 
 		cfg := config.GetConfig()
-		cfg.SetValue("landingHosts", p.Hosts)
-		cfg.Persist()
+		_ = cfg.SetValue("landingHosts", p.Hosts)
+		_ = cfg.Persist()
 
 		c.JSON(http.StatusOK, gin.H{
 			"msg":  "",

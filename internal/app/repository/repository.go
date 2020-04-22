@@ -12,11 +12,15 @@ import (
 	"time"
 )
 
+//TODO:结构体返回列表设置为指针
+
+//短链接历史记录返回列表
 type RequestHistoryListResult struct {
 	Histories []*models.RequestHistory `json:"histories"`
 	Total     int                      `json:"total"`
 }
 
+//NewEmptyRequestHistoryResult 初始化RequestHistoryListResult
 func NewEmptyRequestHistoryResult() *RequestHistoryListResult {
 	return &RequestHistoryListResult{
 		Histories: make([]*models.RequestHistory, 0),
@@ -24,6 +28,8 @@ func NewEmptyRequestHistoryResult() *RequestHistoryListResult {
 	}
 }
 
+//TODO:在append方法中采用...方式避免数组的遍历，
+//AddHistory 添加历史记录
 func (r *RequestHistoryListResult) AddHistory(h ...*models.RequestHistory) {
 	r.Histories = append(r.Histories, h...)
 	r.Total = len(r.Histories)
@@ -33,12 +39,15 @@ type requestHistoryRepository struct {
 	db *redis.Client
 }
 
+//声明初始化数据库客户端变量
 var requestHistoryRepo = &requestHistoryRepository{db.GetRedisClient()}
 
+//GetRequestHistoryRepo 获取数据库客户端
 func GetRequestHistoryRepo() *requestHistoryRepository {
 	return requestHistoryRepo
 }
 
+//Save 存储短链接历史记录
 func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 	rh.Time = time.Now()
 	key := utils.GetRequestHistoryKey(rh.Link.Id, rh.Time)
@@ -51,6 +60,7 @@ func (r *requestHistoryRepository) Save(rh *models.RequestHistory) {
 	r.db.LPush(key, j)
 }
 
+//FindByDate 根据time查询记录
 func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*RequestHistoryListResult, error) {
 	var start time.Time
 	var end time.Time
@@ -64,10 +74,12 @@ func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*R
 		start = d[0]
 		end = d[len(d)-1]
 	}
+	//TODO:time.Time:end.Before(start)
 	if end.Before(start) {
 		return result, fmt.Errorf("结束日期不能早于开始日期")
 	}
 
+	//TODO:redis多命令行处理
 	rawRs := make([]*redis.StringSliceCmd, 0)
 	p := r.db.Pipeline()
 	for ; start.Before(end); start = start.Add(dayDuration) {
@@ -85,6 +97,7 @@ func (r *requestHistoryRepository) FindByDate(linkId string, d ...time.Time) (*R
 	return result, nil
 }
 
+//FindLatest 查询时间范围的记录
 func (r *requestHistoryRepository) FindLatest(linkId string, size int64) (*RequestHistoryListResult, error) {
 	key := utils.GetRequestHistoryKey(linkId, time.Now())
 	rawRs, err := r.db.LRange(key, 0, size).Result()
@@ -111,6 +124,7 @@ func GetUserRepo() *userRepository {
 	return userRepo
 }
 
+//IsExists 是否存在该用户
 func (r *userRepository) IsExists(username string) bool {
 	if username == "" {
 		return false
@@ -124,6 +138,7 @@ func (r *userRepository) IsExists(username string) bool {
 	return exists
 }
 
+//Save 存储用户
 func (r *userRepository) Save(u *models.User) error {
 	if u.Username == "" || u.RawPassword == "" {
 		return fmt.Errorf("username or password can not be empty string")
@@ -135,6 +150,7 @@ func (r *userRepository) Save(u *models.User) error {
 		return fmt.Errorf("%s already exitis", u.Username)
 	}
 
+	//密码哈希加盐处理
 	salt, _ := utils.RandomSalt(32)
 	dk, _ := utils.EncodePassword([]byte(u.RawPassword), salt)
 	u.Password = dk
@@ -146,6 +162,7 @@ func (r *userRepository) Save(u *models.User) error {
 	return nil
 }
 
+//UpdatePassword 更新用户密码
 func (r *userRepository) UpdatePassword(u *models.User) error {
 	if u.RawPassword == "" {
 		return fmt.Errorf("password can not be empty string")
@@ -161,6 +178,7 @@ func (r *userRepository) UpdatePassword(u *models.User) error {
 	return nil
 }
 
+//FindOneByUsername 根据用户名查询用户信息
 func (r *userRepository) FindOneByUsername(username string) (*models.User, error) {
 	if username == "" {
 		return nil, fmt.Errorf("username can not be empty string")
@@ -191,6 +209,7 @@ func GetShortLinkRepo() *shortLinkRepository {
 	return shortLinkRepo
 }
 
+//generateId 生成不重复id
 func (r *shortLinkRepository) generateId(l int) (string, error) {
 	var id string
 	for true {
@@ -207,6 +226,7 @@ func (r *shortLinkRepository) generateId(l int) (string, error) {
 	return id, nil
 }
 
+//save 存储短链接信息
 func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 	if isUpdate && s.Id == "" {
 		return fmt.Errorf("id错误")
@@ -254,10 +274,12 @@ func (r *shortLinkRepository) save(s *models.ShortLink, isUpdate bool) error {
 	return nil
 }
 
+//Save 存储短链接信息
 func (r *shortLinkRepository) Save(s *models.ShortLink) error {
 	return r.save(s, false)
 }
 
+//Update 更新短链接信息
 func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateShortLinkParameter) error {
 	s.Url = params.Url
 	s.Description = params.Description
@@ -266,6 +288,7 @@ func (r *shortLinkRepository) Update(s *models.ShortLink, params *models.UpdateS
 	return r.save(s, true)
 }
 
+//Delete 删除短链接信息
 func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	pipeline := r.db.Pipeline()
 
@@ -283,6 +306,7 @@ func (r *shortLinkRepository) Delete(s *models.ShortLink) {
 	}
 }
 
+//Get 根据id获取短链接信息
 func (r *shortLinkRepository) Get(id string) (*models.ShortLink, error) {
 	if id == "" {
 		return nil, fmt.Errorf("短链接不存在")
@@ -310,6 +334,7 @@ type shortLinkListResult struct {
 	Total      int64               `json:"total"`
 }
 
+//makeEmptyShortLinkListResult 初始化shortLinkListResult
 func makeEmptyShortLinkListResult() *shortLinkListResult {
 	return &shortLinkListResult{
 		ShortLinks: make([]*models.ShortLink, 0),
@@ -317,10 +342,12 @@ func makeEmptyShortLinkListResult() *shortLinkListResult {
 	}
 }
 
+//AddLink 添加短链接列表
 func (r *shortLinkListResult) AddLink(links ...*models.ShortLink) {
 	r.ShortLinks = append(r.ShortLinks, links...)
 }
 
+//List 更新短链接列表信息
 func (r *shortLinkRepository) List(key string, start int64, stop int64) (*shortLinkListResult, error) {
 	result := makeEmptyShortLinkListResult()
 
